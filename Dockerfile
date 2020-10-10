@@ -1,20 +1,41 @@
-FROM python:3.8
+FROM python:3.8 as base
+LABEL description="Run moviepy in a Docker container"
+LABEL version="1.0"
 
-# Install numpy using system package manager
-RUN apt-get -y update && apt-get -y install ffmpeg imagemagick
+# install basic libraries + fonts used for testing
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update \
+ && apt-get -y install --no-install-recommends \
+ ffmpeg \
+ fonts-liberation \
+ imagemagick \
+ locales \
+ tzdata \
+ vim \
+ && apt-get clean \
+ && apt-get autoremove -y \
+ && rm -rf /var/lib/apt/lists/*
 
-# Install some special fonts we use in testing, etc..
-RUN apt-get -y install fonts-liberation
+# system config
+FROM base AS config
+ARG DEBIAN_FRONTEND=noninteractive
+ARG LOCALE=C.UTF-8
+ARG TZ=Etc/UTC
+ENV LC_ALL $LOCALE
+ENV TZ $TZ
+RUN locale-gen $LOCALE \
+ && /usr/sbin/update-locale LANG=$LOCALE \
+ && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime \
+ && echo $TZ > /etc/timezone
 
-RUN apt-get install -y locales && \
-    locale-gen C.UTF-8 && \
-    /usr/sbin/update-locale LANG=C.UTF-8
+# copy all (not ignored) dirs/files to image + install Python packages
+FROM config AS prep_python
+ARG APP_DIR_CONTAINER=/usr/src/moviepy/
+COPY . $APP_DIR_CONTAINER
+WORKDIR $APP_DIR_CONTAINER
+RUN pip install .[optional]
 
-ENV LC_ALL C.UTF-8
+# modify ImageMagick root policy file so that TextClip works correctly
+RUN sed -i 's/none/read,write/g' /etc/ImageMagick-6/policy.xml
 
-ADD . /var/src/moviepy/
-#RUN git clone https://github.com/Zulko/moviepy.git /var/src/moviepy
-RUN cd /var/src/moviepy/ && pip install .[optional]
-
-# modify ImageMagick policy file so that Textclips work correctly.
-RUN sed -i 's/none/read,write/g' /etc/ImageMagick-6/policy.xml 
+FROM prep_python AS final
