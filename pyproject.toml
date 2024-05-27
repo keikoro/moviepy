@@ -1,0 +1,48 @@
+[tool.poetry]
+name = "moviepy"
+version = "v2.0.0.dev2"
+description = "Python module for video editing"
+authors = ["Zulko <Zulko@users.noreply.github.com>"]
+license = "MIT"
+readme = "README.rst"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+decorator = "^5.1.1"
+imageio = "^2.34.1"
+imageio-ffmpeg = "^0.4.9"
+numpy = "1.24"
+proglog = "^0.1.10"
+
+[tool.poetry.group.dev]
+optional = true
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.4.2"
+flake8 = "5"
+flake8-absolute-import = "^1.0.0.2"
+flake8-docstrings = "^1.7.0"
+flake8-implicit-str-concat = "^0.4.0"
+flake8-rst-docstrings = "^0.3.0"
+isort = "^5.13.2"
+prolog = "^0.3.1"
+
+[tool.poetry.group.docs]
+optional = true
+
+[tool.poetry.group.docs.dependencies]
+numpydoc = "^1.7.0"
+sphinx = "7"
+sphinx-rtd-theme = "^2.0.0"
+
+[tool.poetry.group.test]
+optional = true
+
+[tool.poetry.group.test.dependencies]
+coveralls = "3"
+pytest = "^8.2.1"
+pytest-cov = "^5.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
